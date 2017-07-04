@@ -2,7 +2,7 @@
 var fs = require('fs');
 var request = require('request');
 // var Twitter = require('twitter');
-// var Spotify = require('spotify-web-api-node');
+var spotify = require('spotify');
 var prettyjson = require('prettyjson');
 var keys = require('./keys.js');
 
@@ -14,15 +14,14 @@ var output = '';
 
 function runLiri() {
     switch (command) {
-
-        case "movie":
+        case "movie-this":
             omdbMovie();
+            break;
+        case "spotify-this-song":
+            spotifySong();
             break;
             // case "tweets":
             //     myTweets();
-            //     break;
-            // case "spotify":
-            //     spotifySong(param);
             //     break;
         case "error":
             console.log("Command not found");
@@ -30,7 +29,7 @@ function runLiri() {
 } // close liriRun function 
 
 
-
+// --------------------------------------------------------------------------------------------------//
 //// MOVIE FUNCTION
 
 /// Scope: Use OMDB to find the following movie info
@@ -57,26 +56,69 @@ function omdbMovie() {
     request(queryUrl, function(error, response, body) {
             // If the request is successful
             if (!error && response.statusCode == 200) {
+                var data = JSON.parse(body);
                 var movieData = {
-                        "Title": JSON.parse(body).Title,
-                        "Release": JSON.parse(body).Released,
-                        "Rating": JSON.parse(body).imdbRating,
-                        "Country": JSON.parse(body).Country,
-                        "Language": JSON.parse(body).Language,
-                        "Plot": JSON.parse(body).Plot,
-                        "Actors": JSON.parse(body).Actors,
-                        "RottenUrl": JSON.parse(body).tomatoURL
+                        "Title": data.Title,
+                        "Release": data.Released,
+                        "Rating": data.imdbRating,
+                        "Country": data.Country,
+                        "Language": data.Language,
+                        "Plot": data.Plot,
+                        "Actors": data.Actors,
+                        "RottenUrl": data.tomatoURL
                     }
                 // Console log movie data
                 console.log("--------------------------MOVIE INFO--------------------------")
                 console.log(prettyjson.render(movieData, { keysColor: 'red', stringColor: 'white' }));
                 console.log("--------------------------------------------------------------")
             }
-            // Handle errors
             else {
-                console.log("The request failed");
-            } 
+                console.log("The request failed"); // handle errors
+            }
         }) // close request
 } // close movies function
+
+// --------------------------------------------------------------------------------------------------//
+//// Spotify function
+
+/// Scope:  Use the spotify api to find the following data
+// Artist
+// Song Name
+// Preview link of song from Spotify
+// Album the song is from 
+
+function spotifySong() {
+
+    // If no movie name is passed as an argument, default to This Sign by Ace of Base
+    if (argument == null) {
+        argument = 'The Sign by Ace of Base';
+    }
+    console.log(argument);
+    spotify.search({ type: 'track', query: argument }, function(err, results) {
+        // if there is an error console log it
+        if (err) {
+            console.log('Error occurred: ' + err);
+            return;
+        }
+        // if there are results
+        if (results.tracks.items[0].artists[0].name) {
+            // tell the user the results
+            console.log("--------------------------SONG INFO--------------------------")
+            console.log('Artist Name: ' + results.tracks.items[0].artists[0].name);
+            console.log('Song Name: ' + results.tracks.items[0].name);
+            console.log('Spotify URL: ' + results.tracks.items[0].artists[0].external_urls.spotify);
+            console.log('Album Name: ' + results.tracks.items[0].album.name);
+            console.log("--------------------------------------------------------------")
+            // if there are no results
+        } else {
+            // tell the user to choose a new song
+            console.log('We did not find any results for that song.');
+        }
+    })
+} // close spotify function
+
+
+
+
 
 runLiri();

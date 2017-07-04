@@ -5,7 +5,8 @@
   "main": "keys.js",
   "dependencies": {
     "prettyjson": "^1.2.1",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "spotify": "^0.3.0",
   },
   "devDependencies": {},
   "scripts": {
