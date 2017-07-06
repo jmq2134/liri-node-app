@@ -1,17 +1,17 @@
-// Variables
+// Variables to require files
 var fs = require('fs');
-var request = require('request');
-// var Twitter = require('twitter');
-var spotify = require('spotify');
-var prettyjson = require('prettyjson');
-var keys = require('./keys.js');
+var request = require('request'); 
+var prettyjson = require('prettyjson'); 
+var spotify = require('spotify'); // spotify npm
+var keys = require('./keys.js'); // call twitter keys from keys.ja
+var twitterKeys = keys.twitterKeys; // store twitter key in new var
+var Twitter = require('twitter'); // twitter npm
 
+// Variables from command line
 var command = process.argv[2]; // options: movie, tweets, spotify
-var argument = process.argv[3]; // searched item
-var output = '';
+var argument = process.argv[3]; // searched item // must be in " "
 
 // Case statement to run chosen function
-
 function runLiri() {
     switch (command) {
         case "movie-this":
@@ -20,27 +20,23 @@ function runLiri() {
         case "spotify-this-song":
             spotifySong();
             break;
-            // case "tweets":
-            //     myTweets();
-            //     break;
-        case "error":
-            console.log("Command not found");
+        case "tweets":
+            myTweets();
+            break;
     } // close switch
-} // close liriRun function 
+} // close runLiri function 
 
-
-// --------------------------------------------------------------------------------------------------//
-//// MOVIE FUNCTION
+// --------------------------------------------- MOVIE FUNCTION -----------------------------------------------------//
 
 /// Scope: Use OMDB to find the following movie info
-// Title of the movie.
-// Year the movie came out.
-// IMDB Rating of the movie.
-// Country where the movie was produced.
-// Language of the movie.
-// Plot of the movie.
-// Actors in the movie.
-// Rotten Tomatoes URL.
+    // Title of the movie.
+    // Year the movie came out.
+    // IMDB Rating of the movie.
+    // Country where the movie was produced.
+    // Language of the movie.
+    // Plot of the movie.
+    // Actors in the movie.
+    // Rotten Tomatoes URL.
 
 function omdbMovie() {
 
@@ -67,25 +63,23 @@ function omdbMovie() {
                         "Actors": data.Actors,
                         "RottenUrl": data.tomatoURL
                     }
-                // Console log movie data
+                    // Console log movie data to terminal
                 console.log("--------------------------MOVIE INFO--------------------------")
-                console.log(prettyjson.render(movieData, { keysColor: 'red', stringColor: 'white' }));
+                console.log(prettyjson.render(movieData, { keysColor: 'rainbow', stringColor: 'white' }));
                 console.log("--------------------------------------------------------------")
-            }
-            else {
-                console.log("The request failed"); // handle errors
+            } else {
+                console.log("The movie request failed"); // handle errors
             }
         }) // close request
 } // close movies function
 
-// --------------------------------------------------------------------------------------------------//
-//// Spotify function
+// ------------------------------------------- SPOTIFY FUNCTION ----------------------------------------------------//
 
 /// Scope:  Use the spotify api to find the following data
-// Artist
-// Song Name
-// Preview link of song from Spotify
-// Album the song is from 
+    // Artist
+    // Song Name
+    // Preview link of song from Spotify
+    // Album the song is from 
 
 function spotifySong() {
 
@@ -109,16 +103,40 @@ function spotifySong() {
             console.log('Spotify URL: ' + results.tracks.items[0].artists[0].external_urls.spotify);
             console.log('Album Name: ' + results.tracks.items[0].album.name);
             console.log("--------------------------------------------------------------")
-            // if there are no results
-        } else {
+        } else { // if there are no results
             // tell the user to choose a new song
-            console.log('We did not find any results for that song.');
+            console.log('No results found. Try another song.');
         }
     })
 } // close spotify function
 
 
+// --------------------------------------------- TWITTER FUNCTION ---------------------------------------------------//
 
+/// Scope:  Show last 20 tweets and when they were creaated in the terminal window
 
+function myTweets() {
 
+    var params = { screen_name: 'julieCase2017'}; // Twitter username
+
+    var client = keys.twitterKeys; // Pull twitter keys from keys.js
+    console.log(client);
+
+    client.get('statuses/user_timeline', params, function(error, tweets, response) {
+       // If there is no error, print out tweets; Ex: @julieCase2017 : tweet at timestamp
+        if (! error) { 
+            for (var t = 0; t < tweets.length; t++) {
+                // tell the params the results
+                console.log("-------------------------- TWEETS --------------------------")
+                console.log("@" + params.screen_name + " : " + tweets[t].text + " at " + +tweets[t].created_at);
+                console.log("------------------------------------------------------------")
+            }
+        } else {
+            console.log('Error loading tweets'); // Error handling
+        }
+    });
+} // close myTweets function
+
+// -------------------------------------------------- RUN LIRI JS ------------------------------------------------------//
+//// Run liri
 runLiri();
