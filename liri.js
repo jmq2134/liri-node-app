@@ -1,7 +1,7 @@
 // Variables to require files
 var fs = require('fs');
-var request = require('request'); 
-var prettyjson = require('prettyjson'); 
+var request = require('request');
+var prettyjson = require('prettyjson');
 var spotify = require('spotify'); // spotify npm
 var keys = require('./keys.js'); // call twitter keys from keys.ja
 var twitterKeys = keys.twitterKeys; // store twitter key in new var
@@ -11,8 +11,10 @@ var Twitter = require('twitter'); // twitter npm
 var command = process.argv[2]; // options: movie, tweets, spotify
 var argument = process.argv[3]; // searched item // must be in " "
 
-// Case statement to run chosen function
+// Run liri function 
 function runLiri() {
+
+    // Case statement to run chosen function
     switch (command) {
         case "movie-this":
             omdbMovie();
@@ -23,20 +25,22 @@ function runLiri() {
         case "tweets":
             myTweets();
             break;
+        case "do-what-it-says":
+            simonSays();
     } // close switch
 } // close runLiri function 
 
 // --------------------------------------------- MOVIE FUNCTION -----------------------------------------------------//
 
 /// Scope: Use OMDB to find the following movie info
-    // Title of the movie.
-    // Year the movie came out.
-    // IMDB Rating of the movie.
-    // Country where the movie was produced.
-    // Language of the movie.
-    // Plot of the movie.
-    // Actors in the movie.
-    // Rotten Tomatoes URL.
+// Title of the movie.
+// Year the movie came out.
+// IMDB Rating of the movie.
+// Country where the movie was produced.
+// Language of the movie.
+// Plot of the movie.
+// Actors in the movie.
+// Rotten Tomatoes URL.
 
 function omdbMovie() {
 
@@ -73,13 +77,13 @@ function omdbMovie() {
         }) // close request
 } // close movies function
 
-// ------------------------------------------- SPOTIFY FUNCTION ----------------------------------------------------//
+// -------------------------------------- SPOTIFY FUNCTION (not working) ----------------------------------------------//
 
 /// Scope:  Use the spotify api to find the following data
-    // Artist
-    // Song Name
-    // Preview link of song from Spotify
-    // Album the song is from 
+// Artist
+// Song Name
+// Preview link of song from Spotify
+// Album the song is from 
 
 function spotifySong() {
 
@@ -117,26 +121,73 @@ function spotifySong() {
 
 function myTweets() {
 
-    var params = { screen_name: 'julieCase2017'}; // Twitter username
+    var client = new Twitter({
+        consumer_key: twitterKeys.consumer_key,
+        consumer_secret: twitterKeys.consumer_secret,
+        access_token_key: twitterKeys.access_token_key,
+        access_token_secret: twitterKeys.access_token_secret,
+    });
 
-    var client = keys.twitterKeys; // Pull twitter keys from keys.js
-    console.log(client);
+    // Twitter user account info
+    var params = {
+        screen_name: 'julieCase2017',
+        count: '20',
+        trim_user: false,
+    };
 
-    client.get('statuses/user_timeline', params, function(error, tweets, response) {
-       // If there is no error, print out tweets; Ex: @julieCase2017 : tweet at timestamp
-        if (! error) { 
-            for (var t = 0; t < tweets.length; t++) {
-                // tell the params the results
-                console.log("-------------------------- TWEETS --------------------------")
-                console.log("@" + params.screen_name + " : " + tweets[t].text + " at " + +tweets[t].created_at);
-                console.log("------------------------------------------------------------")
+    client.get('statuses/user_timeline', params, function(error, timeline, response) {
+        // If there is no error, print out tweets; Ex: @julieCase2017 : tweet on date
+        if (!error) {
+
+            console.log(prettyjson.render("-------------------------- TWEETS --------------------------", { stringColor: 'blue' }));
+            console.log("@" + params.screen_name + ": ")
+
+            for (tweet in timeline) {
+                var text = timeline[tweet].text;
+                var date = new Date(timeline[tweet].created_at);
+
+                console.log(prettyjson.render(text, { stringColor: 'white' }) + " on " + date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear());
             }
+
+            console.log(prettyjson.render("------------------------------------------------------------", { stringColor: 'blue' }));
         } else {
             console.log('Error loading tweets'); // Error handling
         }
     });
 } // close myTweets function
 
+// --------------------------------------------- DO WHAT IT SAYS -------------------------------------------------------//
+
+/// Scope:  Read the text string in random.txt and run chosen command/argument
+
+function simonSays() {
+
+    // Read random.txt song
+    fs.readFile("random.txt", "utf8", function(err, data) {
+            if (err) {
+                console.log(err);
+            } else {
+                // Find the command and argument by slicing data string by the index of the ","
+                var comma = data.indexOf(',');
+                command = data.slice(0, comma);
+                argument = data.slice(comma + 1);
+
+                // Run the switch based on the command
+                switch (command) {
+                    case "movie-this":
+                        omdbMovie();
+                        break;
+                    case "spotify-this-song":
+                        spotifySong();
+                        break;
+                    case "tweets":
+                        myTweets();
+                        break;
+                }
+            }
+    });
+} // close simonSays
+
 // -------------------------------------------------- RUN LIRI JS ------------------------------------------------------//
-//// Run liri
+
 runLiri();
