@@ -139,17 +139,17 @@ function myTweets() {
         // If there is no error, print out tweets; Ex: @julieCase2017 : tweet on date
         if (!error) {
 
-            console.log(prettyjson.render("-------------------------- TWEETS --------------------------", { stringColor: 'blue' }));
+            console.log(prettyjson.render("-------------------------- TWEETS --------------------------", { stringColor: 'green' }));
             console.log("@" + params.screen_name + ": ")
 
             for (tweet in timeline) {
                 var text = timeline[tweet].text;
                 var date = new Date(timeline[tweet].created_at);
 
-                console.log(prettyjson.render(text, { stringColor: 'white' }) + " on " + date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear());
+                console.log(prettyjson.render(text, { stringColor: 'white' }) + prettyjson.render((" on " + date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear()), {stringColor: 'blue'}));
             }
 
-            console.log(prettyjson.render("------------------------------------------------------------", { stringColor: 'blue' }));
+            console.log(prettyjson.render("------------------------------------------------------------", { stringColor: 'green' }));
         } else {
             console.log('Error loading tweets'); // Error handling
         }
